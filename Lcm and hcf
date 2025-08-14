@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number System Converter Pro</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --container-bg: #ffffff;
+            --primary-color: #007bff;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --input-bg: #fafbfc;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-theme {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --primary-color: #1a73e8;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --input-bg: #2b2b2b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .theme-switcher {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .theme-switcher button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .result-item {
+            background-color: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-item h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .history-panel {
+            background-color: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .history-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="theme-switcher">
+            <button id="theme-toggle">🌙</button>
+        </div>
+        <h1>Number System Converter Pro</h1>
+        
+        <div class="input-group">
+            <div class="input-field">
+                <label for="input-number">नंबर डालें:</label>
+                <input type="text" id="input-number" placeholder="जैसे: 10110, 255, FF">
+                <span id="input-error" class="error-message"></span>
+            </div>
+            <div class="input-field">
+                <label for="source-system">इनपुट सिस्टम चुनें:</label>
+                <select id="source-system">
+                    <option value="auto">ऑटो-डिटेक्ट</option>
+                    <option value="decimal">दशमलव (Decimal)</option>
+                    <option value="binary">बाइनरी (Binary)</option>
+                    <option value="octal">ऑक्टल (Octal)</option>
+                    <option value="hexadecimal">हेक्साडेसिमल (Hexadecimal)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="result-item">
+                <div class="result-details">
+                    <h3>बाइनरी (Binary)</h3>
+                    <div id="result-binary" class="result-value"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('result-binary')">📋</button>
+            </div>
+            <div class="result-item">
+                <div class="result-details">
+                    <h3>ऑक्टल (Octal)</h3>
+                    <div id="result-octal" class="result-value"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('result-octal')">📋</button>
+            </div>
+            <div class="result-item">
+                <div class="result-details">
+                    <h3>दशमलव (Decimal)</h3>
+                    <div id="result-decimal" class="result-value"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('result-decimal')">📋</button>
+            </div>
+            <div class="result-item">
+                <div class="result-details">
+                    <h3>हेक्साडेसिमल (Hexadecimal)</h3>
+                    <div id="result-hexadecimal" class="result-value"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('result-hexadecimal')">📋</button>
+            </div>
+        </div>
+        
+        <div class="history-panel">
+            <h2>कन्वर्ज़न हिस्ट्री</h2>
+            <ul id="history-list" class="history-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const inputNumber = document.getElementById('input-number');
+        const sourceSystem = document.getElementById('source-system');
+        const resultDecimal = document.getElementById('result-decimal');
+        const resultBinary = document.getElementById('result-binary');
+        const resultOctal = document.getElementById('result-octal');
+        const resultHexadecimal = document.getElementById('result-hexadecimal');
+        const inputError = document.getElementById('input-error');
+        const historyList = document.getElementById('history-list');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        let history = JSON.parse(localStorage.getItem('converter-history')) || [];
+        const MAX_HISTORY_ITEMS = 10;
+        
+        // Function to detect number system
+        function detectSystem(num) {
+            if (/^[01]+$/.test(num)) return 'binary';
+            if (/^[0-7]+$/.test(num)) return 'octal';
+            if (/^[0-9]+$/.test(num)) return 'decimal';
+            if (/^[0-9a-fA-F]+$/.test(num)) return 'hexadecimal';
+            return null;
+        }
+
+        // Main conversion function
+        function convertNumber() {
+            const numStr = inputNumber.value.trim();
+            inputError.style.display = 'none';
+
+            if (!numStr) {
+                clearResults();
+                return;
+            }
+
+            let fromSystem = sourceSystem.value;
+            let decimalValue;
+            let validationError = null;
+
+            if (fromSystem === 'auto') {
+                fromSystem = detectSystem(numStr);
+                if (!fromSystem) {
+                    validationError = 'अमान्य इनपुट, कृपया सही नंबर डालें।';
+                }
+            } else {
+                const regexMap = {
+                    'binary': /^[01]+$/,
+                    'octal': /^[0-7]+$/,
+                    'decimal': /^[0-9]+$/,
+                    'hexadecimal': /^[0-9a-fA-F]+$/
+                };
+                if (!regexMap[fromSystem].test(numStr)) {
+                    validationError = `यह एक अमान्य ${fromSystem} नंबर है।`;
+                }
+            }
+
+            if (validationError) {
+                inputError.textContent = validationError;
+                inputError.style.display = 'block';
+                clearResults();
+                return;
+            }
+
+            try {
+                switch (fromSystem) {
+                    case 'binary':
+                        decimalValue = parseInt(numStr, 2);
+                        break;
+                    case 'octal':
+                        decimalValue = parseInt(numStr, 8);
+                        break;
+                    case 'decimal':
+                        decimalValue = parseInt(numStr, 10);
+                        break;
+                    case 'hexadecimal':
+                        decimalValue = parseInt(numStr, 16);
+                        break;
+                }
+
+                if (isNaN(decimalValue)) {
+                    validationError = 'कन्वर्ज़न में कोई समस्या हुई।';
+                    inputError.textContent = validationError;
+                    inputError.style.display = 'block';
+                    clearResults();
+                    return;
+                }
+
+                // Show all results
+                resultDecimal.textContent = decimalValue;
+                resultBinary.textContent = decimalValue.toString(2);
+                resultOctal.textContent = decimalValue.toString(8);
+                resultHexadecimal.textContent = decimalValue.toString(16).toUpperCase();
+
+                // Add to history
+                addHistory(numStr, fromSystem, decimalValue);
+
+            } catch (e) {
+                inputError.textContent = 'एक अप्रत्याशित त्रुटि हुई।';
+                inputError.style.display = 'block';
+                clearResults();
+            }
+        }
+
+        function clearResults() {
+            resultDecimal.textContent = '';
+            resultBinary.textContent = '';
+            resultOctal.textContent = '';
+            resultHexadecimal.textContent = '';
+        }
+
+        // History panel functionality
+        function addHistory(input, system, decimal) {
+            const newItem = {
+                input: input,
+                system: system,
+                decimal: decimal,
+                binary: decimal.toString(2),
+                octal: decimal.toString(8),
+                hex: decimal.toString(16).toUpperCase(),
+                timestamp: new Date().toLocaleString()
+            };
+            
+            // Prevent adding duplicate history
+            if (history.length > 0 && history[0].input === input && history[0].system === system) {
+                return;
+            }
+
+            history.unshift(newItem);
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history.pop();
+            }
+            localStorage.setItem('converter-history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <span><b>${item.input}</b> (${item.system}) →</span>
+                    <span>Bin: ${item.binary} | Dec: ${item.decimal} | Hex: ${item.hex}</span>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const textToCopy = element.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Optional: provide user feedback, e.g., a temporary "Copied!" message
+                console.log("Copied to clipboard: " + textToCopy);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        // Custom Theme Switcher
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+            }
+            renderHistory();
+        });
+
+        // Event Listeners for live conversion
+        inputNumber.addEventListener('input', convertNumber);
+        sourceSystem.addEventListener('change', convertNumber);
+        themeToggle.addEventListener('click', toggleTheme);
+    </script>
+</body>
+</html>
